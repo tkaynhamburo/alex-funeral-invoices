@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -83,11 +82,10 @@ const QuotationGenerator = () => {
           body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
           .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
           .logo-section { display: flex; align-items: center; }
-          .logo { width: 120px; height: 80px; background: linear-gradient(135deg, #2563eb, #1e40af); 
-                  border-radius: 8px; display: flex; align-items: center; justify-content: center; 
-                  color: white; font-weight: bold; font-size: 24px; margin-right: 20px; }
+          .logo { width: 120px; height: 80px; margin-right: 20px; }
+          .logo img { width: 100%; height: 100%; object-fit: contain; }
           .company-info { }
-          .company-name { font-size: 24px; font-weight: bold; margin: 0; }
+          .company-name { font-size: 24px; font-weight: bold; margin: 0; color: #1e3a8a; }
           .company-details { color: #666; margin-top: 5px; }
           .quotation-info { text-align: right; }
           .quotation-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2563eb; }
@@ -110,9 +108,11 @@ const QuotationGenerator = () => {
       <body>
         <div class="header">
           <div class="logo-section">
-            <div class="logo">AF</div>
+            <div class="logo">
+              <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" />
+            </div>
             <div class="company-info">
-              <h1 class="company-name">Alex's Funeral Services</h1>
+              <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
               <div class="company-details">
                 30 Suncity<br>
                 Orchard, De Dorms<br>

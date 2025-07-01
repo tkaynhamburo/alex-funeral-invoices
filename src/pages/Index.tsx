@@ -15,9 +15,11 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-800 to-blue-900 rounded-lg flex items-center justify-center">
-                <div className="text-white font-bold text-xl">AF</div>
-              </div>
+              <img 
+                src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" 
+                alt="Alex's Funeral Services Logo" 
+                className="w-20 h-16 object-contain"
+              />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Alex's Funeral Services</h1>
                 <p className="text-gray-600">Ready To Serve The Community</p>
