@@ -8,9 +8,18 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 relative">
+      {/* Background Logo */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <img 
+          src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" 
+          alt="Background Logo" 
+          className="w-96 h-72 object-contain opacity-5 scale-150 blur-[0.5px]"
+        />
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b relative z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -36,7 +45,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
             Compassionate Care in Your Time of Need
@@ -57,7 +66,7 @@ const Index = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-16 px-6 bg-white/90 backdrop-blur-sm relative z-10">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">Our Services</h3>
           <div className="grid md:grid-cols-3 gap-8">
@@ -107,7 +116,7 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 px-6 bg-gray-50">
+      <section className="py-16 px-6 bg-gray-50/90 backdrop-blur-sm relative z-10">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">Contact Information</h3>
           <div className="grid md:grid-cols-3 gap-8 text-center">
@@ -131,7 +140,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 px-6">
+      <footer className="bg-gray-900/95 backdrop-blur-sm text-white py-8 px-6 relative z-10">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-gray-400">
             © 2025 Alex's Funeral Services. All rights reserved. | Registration Number: K2020920761
