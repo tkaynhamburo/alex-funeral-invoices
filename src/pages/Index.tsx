@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" 
                 alt="Alex's Funeral Services Logo" 
-                className="w-20 h-16 object-contain"
+                className="w-32 h-24 object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Alex's Funeral Services</h1>
