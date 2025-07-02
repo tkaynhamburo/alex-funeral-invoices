@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, FileText, Calculator, Phone, Mail, MapPin } from 'lucide-react';
+import { Shield, FileText, Calculator, Phone, Mail, MapPin, Heart } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -62,6 +62,21 @@ const Index = () => {
               Contact Us
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Caring Message Section */}
+      <section className="py-12 px-6 bg-blue-50/90 backdrop-blur-sm relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <Heart className="w-12 h-12 text-blue-800" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">We Care</h3>
+          <p className="text-lg text-gray-700 leading-relaxed">
+            At Alex's Funeral Services, we understand that losing a loved one is one of life's most difficult experiences. 
+            Our compassionate team is dedicated to providing personalized care and support to help you honor your loved one's 
+            memory with dignity and respect. We're here for you every step of the way.
+          </p>
         </div>
       </section>
 
@@ -146,7 +161,7 @@ const Index = () => {
             © 2025 Alex's Funeral Services. All rights reserved. | Registration Number: K2020920761
           </p>
           <p className="text-gray-400 mt-2">
-            Account: AMN Funeral Services | Bank: FNB | Account Number: 63092451681
+            Serving the community with compassion and dignity
           </p>
         </div>
       </footer>
