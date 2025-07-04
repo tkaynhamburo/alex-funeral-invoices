@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Download, Plus, Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Download, Plus, Trash2, Eye, Calculator } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface InvoiceItem {
@@ -78,30 +80,78 @@ const InvoiceGenerator = () => {
       <html>
       <head>
         <title>Invoice ${invoiceData.invoiceNumber}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-          .logo-section { display: flex; align-items: center; }
-          .logo { width: 120px; height: 80px; margin-right: 20px; }
+          @media print {
+            body { margin: 0 !important; }
+            .no-print { display: none !important; }
+          }
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            font-size: 12px;
+            line-height: 1.3;
+          }
+          .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+          }
+          @media (max-width: 600px) {
+            .header { flex-direction: column; text-align: center; }
+            .invoice-info { text-align: center; margin-top: 15px; }
+          }
+          .logo-section { display: flex; align-items: center; flex-wrap: wrap; }
+          .logo { width: 80px; height: 60px; margin-right: 15px; }
           .logo img { width: 100%; height: 100%; object-fit: contain; }
-          .company-info { }
-          .company-name { font-size: 24px; font-weight: bold; margin: 0; color: #1e3a8a; }
-          .company-details { color: #666; margin-top: 5px; }
+          .company-name { font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a; }
+          .company-details { color: #666; margin-top: 5px; font-size: 11px; }
           .invoice-info { text-align: right; }
-          .invoice-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-          .client-section { margin: 30px 0; }
-          .bill-to { font-weight: bold; margin-bottom: 10px; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+          .invoice-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+          .client-section { margin: 20px 0; }
+          .bill-to { font-weight: bold; margin-bottom: 8px; }
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 15px 0; 
+            font-size: 11px;
+          }
+          th, td { 
+            padding: 8px 4px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+            word-wrap: break-word;
+          }
           th { background-color: #f8f9fa; font-weight: bold; }
           .amount { text-align: right; }
-          .totals { margin-top: 20px; }
-          .totals table { width: 300px; margin-left: auto; }
-          .total-row { font-weight: bold; font-size: 18px; }
-          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; }
-          .footer-text { color: #666; font-size: 14px; }
-          .balance-due { background-color: #f8f9fa; padding: 15px; text-align: center; 
-                        font-size: 20px; font-weight: bold; margin: 20px 0; }
+          .totals { margin-top: 15px; }
+          .totals table { width: 100%; max-width: 250px; margin-left: auto; }
+          .total-row { font-weight: bold; font-size: 14px; }
+          .footer { 
+            margin-top: 30px; 
+            padding-top: 15px; 
+            border-top: 1px solid #ddd; 
+            font-size: 10px;
+          }
+          .footer-text { color: #666; }
+          .balance-due { 
+            background-color: #f8f9fa; 
+            padding: 10px; 
+            text-align: center; 
+            font-size: 16px; 
+            font-weight: bold; 
+            margin: 15px 0; 
+          }
+          @media (max-width: 600px) {
+            body { padding: 5px; font-size: 11px; }
+            .logo { width: 60px; height: 45px; }
+            .company-name { font-size: 16px; }
+            table { font-size: 10px; }
+            th, td { padding: 6px 2px; }
+          }
         </style>
       </head>
       <body>
@@ -123,15 +173,15 @@ const InvoiceGenerator = () => {
           </div>
           <div class="invoice-info">
             <div class="invoice-title">ALEX'S FUNERAL SERVICE'S<br>${invoiceData.invoiceNumber}</div>
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 15px;">
               <strong>DATE</strong><br>
               ${new Date(invoiceData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 10px;">
               <strong>DUE</strong><br>
               ${invoiceData.dueDate}
             </div>
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 10px;">
               <strong>BALANCE DUE</strong><br>
               ZAR R${total.toFixed(2)}
             </div>
@@ -146,10 +196,10 @@ const InvoiceGenerator = () => {
         <table>
           <thead>
             <tr>
-              <th>DESCRIPTION</th>
-              <th class="amount">RATE</th>
-              <th class="amount">QTY</th>
-              <th class="amount">AMOUNT</th>
+              <th style="width: 40%;">DESCRIPTION</th>
+              <th class="amount" style="width: 20%;">RATE</th>
+              <th class="amount" style="width: 15%;">QTY</th>
+              <th class="amount" style="width: 25%;">AMOUNT</th>
             </tr>
           </thead>
           <tbody>
@@ -191,7 +241,7 @@ const InvoiceGenerator = () => {
             Bank: FNB<br>
             Account number: 63092451681
           </div>
-          <div style="text-align: center; margin-top: 30px; font-weight: bold;">
+          <div style="text-align: center; margin-top: 20px; font-weight: bold;">
             Ready To Serve The Community
           </div>
         </div>
@@ -213,144 +263,207 @@ const InvoiceGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
-              <h1 className="text-xl font-bold text-gray-900">Invoice Generator</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900">Invoice</h1>
             </div>
-            <Button onClick={generatePDF} className="bg-green-600 hover:bg-green-700">
-              <Download className="w-4 h-4 mr-2" />
-              Generate PDF
+            <Button onClick={generatePDF} size="sm" className="bg-green-600 hover:bg-green-700">
+              <Download className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Generate </span>PDF
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-3 sm:p-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Invoice Details</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-lg">
+              <Calculator className="w-5 h-5 mr-2" />
+              Invoice Details
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="invoiceNumber">Invoice Number</Label>
-                <Input
-                  id="invoiceNumber"
-                  value={invoiceData.invoiceNumber}
-                  onChange={(e) => setInvoiceData({...invoiceData, invoiceNumber: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={invoiceData.date}
-                  onChange={(e) => setInvoiceData({...invoiceData, date: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input
-                  id="dueDate"
-                  value={invoiceData.dueDate}
-                  onChange={(e) => setInvoiceData({...invoiceData, dueDate: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="clientName">Client Name</Label>
-              <Input
-                id="clientName"
-                value={invoiceData.clientName}
-                onChange={(e) => setInvoiceData({...invoiceData, clientName: e.target.value})}
-                placeholder="Enter client name"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Items</h3>
-                <Button onClick={addItem} size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
-                </Button>
-              </div>
+          <CardContent>
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="details" className="text-xs sm:text-sm">Details</TabsTrigger>
+                <TabsTrigger value="items" className="text-xs sm:text-sm">Items</TabsTrigger>
+                <TabsTrigger value="summary" className="text-xs sm:text-sm">Summary</TabsTrigger>
+              </TabsList>
               
-              <div className="space-y-3">
-                {invoiceData.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-center">
-                    <div className="col-span-5">
-                      <Input
-                        value={item.description}
-                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                        placeholder="Description"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => updateItem(index, 'rate', Number(e.target.value))}
-                        placeholder="Rate"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.qty}
-                        onChange={(e) => updateItem(index, 'qty', Number(e.target.value))}
-                        placeholder="Qty"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        value={`R${item.amount.toFixed(2)}`}
-                        readOnly
-                        className="bg-gray-50"
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+              <TabsContent value="details" className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="invoiceNumber" className="text-sm font-medium">Invoice Number</Label>
+                    <Input
+                      id="invoiceNumber"
+                      value={invoiceData.invoiceNumber}
+                      onChange={(e) => setInvoiceData({...invoiceData, invoiceNumber: e.target.value})}
+                      className="mt-1"
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="discount">Discount (R)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  value={invoiceData.discount}
-                  onChange={(e) => setInvoiceData({...invoiceData, discount: Number(e.target.value)})}
-                />
-              </div>
-              <div className="flex items-end">
-                <div className="text-right w-full">
-                  <div className="text-sm text-gray-600">Total Amount</div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    R{calculateTotal().toFixed(2)}
+                  <div>
+                    <Label htmlFor="date" className="text-sm font-medium">Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={invoiceData.date}
+                      onChange={(e) => setInvoiceData({...invoiceData, date: e.target.value})}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dueDate" className="text-sm font-medium">Due Date</Label>
+                    <Input
+                      id="dueDate"
+                      value={invoiceData.dueDate}
+                      onChange={(e) => setInvoiceData({...invoiceData, dueDate: e.target.value})}
+                      className="mt-1"
+                    />
                   </div>
                 </div>
-              </div>
-            </div>
+
+                <div>
+                  <Label htmlFor="clientName" className="text-sm font-medium">Client Name</Label>
+                  <Input
+                    id="clientName"
+                    value={invoiceData.clientName}
+                    onChange={(e) => setInvoiceData({...invoiceData, clientName: e.target.value})}
+                    placeholder="Enter client name"
+                    className="mt-1"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="items" className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Items</h3>
+                  <Button onClick={addItem} size="sm">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add
+                  </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {invoiceData.items.map((item, index) => (
+                    <Card key={index} className="p-3">
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-gray-600">Description</Label>
+                          <Input
+                            value={item.description}
+                            onChange={(e) => updateItem(index, 'description', e.target.value)}
+                            placeholder="Description"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-xs text-gray-600">Rate</Label>
+                            <Input
+                              type="number"
+                              value={item.rate}
+                              onChange={(e) => updateItem(index, 'rate', Number(e.target.value))}
+                              placeholder="Rate"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-600">Qty</Label>
+                            <Input
+                              type="number"
+                              value={item.qty}
+                              onChange={(e) => updateItem(index, 'qty', Number(e.target.value))}
+                              placeholder="Qty"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-600">Amount</Label>
+                            <Input
+                              value={`R${item.amount.toFixed(2)}`}
+                              readOnly
+                              className="bg-gray-50 mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeItem(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="summary" className="space-y-6">
+                <div>
+                  <Label htmlFor="discount" className="text-sm font-medium">Discount (R)</Label>
+                  <Input
+                    id="discount"
+                    type="number"
+                    value={invoiceData.discount}
+                    onChange={(e) => setInvoiceData({...invoiceData, discount: Number(e.target.value)})}
+                    className="mt-1 max-w-xs"
+                  />
+                </div>
+                
+                <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-2">Total Invoice Amount</div>
+                      <div className="text-3xl font-bold text-green-700">
+                        R{calculateTotal().toFixed(2)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-2 text-sm text-gray-600">
+                  <h4 className="font-semibold text-gray-900">Invoice Summary:</h4>
+                  <div className="flex justify-between">
+                    <span>Items Count:</span>
+                    <span>{invoiceData.items.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>R{invoiceData.items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}</span>
+                  </div>
+                  {invoiceData.discount > 0 && (
+                    <div className="flex justify-between text-red-600">
+                      <span>Discount:</span>
+                      <span>-R{invoiceData.discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span>R{calculateTotal().toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={generatePDF} 
+                  className="w-full bg-green-600 hover:bg-green-700 py-6 text-lg"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Generate PDF Invoice
+                </Button>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
