@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,9 +36,14 @@ const Index = () => {
             </div>
             <Button 
               onClick={() => navigate('/admin')}
-              className="bg-blue-800 hover:bg-blue-900"
+              className="bg-blue-800 hover:bg-blue-900 flex items-center gap-2"
             >
-              <Shield className="w-4 h-4 mr-2" />
+              <img 
+                src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" 
+                alt="Logo" 
+                className="w-4 h-4 object-contain"
+              />
+              <Shield className="w-4 h-4" />
               Admin Access
             </Button>
           </div>
