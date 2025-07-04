@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -342,13 +343,22 @@ const QuotationGenerator = () => {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="discount">Discount (R)</Label>
+                <Label htmlFor="discount" className="text-sm font-medium text-gray-700">
+                  Discount Amount (R)
+                </Label>
                 <Input
                   id="discount"
                   type="number"
+                  min="0"
+                  step="0.01"
                   value={quotationData.discount}
                   onChange={(e) => setQuotationData({...quotationData, discount: Number(e.target.value)})}
+                  placeholder="Enter discount amount"
+                  className="mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional: Enter discount amount to reduce total
+                </p>
               </div>
               <div className="flex items-end">
                 <div className="text-right w-full">
@@ -356,6 +366,11 @@ const QuotationGenerator = () => {
                   <div className="text-2xl font-bold text-blue-600">
                     R{calculateTotal().toFixed(2)}
                   </div>
+                  {quotationData.discount > 0 && (
+                    <div className="text-sm text-green-600">
+                      Discount Applied: -R{quotationData.discount.toFixed(2)}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
