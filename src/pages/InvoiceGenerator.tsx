@@ -248,33 +248,34 @@ const InvoiceGenerator = () => {
   };
 
   const downloadPDF = () => {
-    console.log('Starting direct PDF download for invoice');
+    console.log('Starting automatic file download for invoice');
     
     try {
       const pdfContent = generatePDFContent();
       const blob = new Blob([pdfContent], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       
-      // Create a temporary link element
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Invoice_${invoiceData.invoiceNumber}.html`;
+      // Create a temporary invisible download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `Invoice_${invoiceData.invoiceNumber}.html`;
+      downloadLink.style.display = 'none';
       
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Add to DOM, trigger download, then remove
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
       
-      // Clean up
+      // Clean up the blob URL
       URL.revokeObjectURL(url);
       
       toast({
-        title: "Download Started",
-        description: "Invoice file has been downloaded to your device",
+        title: "Download Complete",
+        description: `Invoice ${invoiceData.invoiceNumber} has been downloaded successfully`,
       });
       
     } catch (error) {
-      console.error('PDF download error:', error);
+      console.error('Download error:', error);
       toast({
         title: "Download Failed",
         description: "Unable to download the invoice. Please try again.",
