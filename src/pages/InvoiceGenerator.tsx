@@ -27,6 +27,7 @@ interface InvoiceData {
 const InvoiceGenerator = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showPreview, setShowPreview] = useState(false);
   
   const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     invoiceNumber: `INV${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
@@ -68,242 +69,215 @@ const InvoiceGenerator = () => {
     return subtotal - invoiceData.discount;
   };
 
-  const generatePDF = () => {
-    console.log('Starting PDF generation for invoice');
+  const generatePDFContent = () => {
+    const total = calculateTotal();
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice ${invoiceData.invoiceNumber}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          @media print {
+            body { margin: 0 !important; }
+            .no-print { display: none !important; }
+            @page { margin: 0.5in; }
+          }
+          body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            font-size: 12px;
+            line-height: 1.3;
+            background: white;
+          }
+          .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+          }
+          @media (max-width: 600px) {
+            body { padding: 5px; font-size: 11px; }
+            .header { flex-direction: column; text-align: center; }
+            .invoice-info { text-align: center; margin-top: 15px; }
+            .logo { width: 60px; height: 45px; }
+            .company-name { font-size: 16px; }
+            table { font-size: 10px; }
+            th, td { padding: 6px 2px; }
+          }
+          .logo-section { display: flex; align-items: center; flex-wrap: wrap; }
+          .logo { width: 80px; height: 60px; margin-right: 15px; }
+          .logo img { width: 100%; height: 100%; object-fit: contain; }
+          .company-name { font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a; }
+          .company-details { color: #666; margin-top: 5px; font-size: 11px; }
+          .invoice-info { text-align: right; }
+          .invoice-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+          .client-section { margin: 20px 0; }
+          .bill-to { font-weight: bold; margin-bottom: 8px; }
+          table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 15px 0; 
+            font-size: 11px;
+          }
+          th, td { 
+            padding: 8px 4px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+            word-wrap: break-word;
+          }
+          th { background-color: #f8f9fa; font-weight: bold; }
+          .amount { text-align: right; }
+          .totals { margin-top: 15px; }
+          .totals table { width: 100%; max-width: 250px; margin-left: auto; }
+          .total-row { font-weight: bold; font-size: 14px; }
+          .footer { 
+            margin-top: 30px; 
+            padding-top: 15px; 
+            border-top: 1px solid #ddd; 
+            font-size: 10px;
+          }
+          .footer-text { color: #666; }
+          .balance-due { 
+            background-color: #f8f9fa; 
+            padding: 10px; 
+            text-align: center; 
+            font-size: 16px; 
+            font-weight: bold; 
+            margin: 15px 0; 
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo-section">
+            <div class="logo">
+              <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" onerror="this.style.display='none'" />
+            </div>
+            <div class="company-info">
+              <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
+              <div class="company-details">
+                30 Suncity<br>
+                Orchard, De Dorms<br>
+                6840<br>
+                067 333 4472<br>
+                anhamburo14@gmail.com
+              </div>
+            </div>
+          </div>
+          <div class="invoice-info">
+            <div class="invoice-title">ALEX'S FUNERAL SERVICE'S<br>${invoiceData.invoiceNumber}</div>
+            <div style="margin-top: 15px;">
+              <strong>DATE</strong><br>
+              ${new Date(invoiceData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+            <div style="margin-top: 10px;">
+              <strong>DUE</strong><br>
+              ${invoiceData.dueDate}
+            </div>
+            <div style="margin-top: 10px;">
+              <strong>BALANCE DUE</strong><br>
+              ZAR R${total.toFixed(2)}
+            </div>
+          </div>
+        </div>
+
+        <div class="client-section">
+          <div class="bill-to">BILL TO</div>
+          <div>${invoiceData.clientName || 'Client'}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40%;">DESCRIPTION</th>
+              <th class="amount" style="width: 20%;">RATE</th>
+              <th class="amount" style="width: 15%;">QTY</th>
+              <th class="amount" style="width: 25%;">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${invoiceData.items.map(item => `
+              <tr>
+                <td>${item.description || 'N/A'}</td>
+                <td class="amount">R${(item.rate || 0).toFixed(2)}</td>
+                <td class="amount">${item.qty || 0}</td>
+                <td class="amount">R${(item.amount || 0).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <table>
+            ${invoiceData.discount > 0 ? `
+            <tr>
+              <td>DISCOUNT</td>
+              <td class="amount">-R${invoiceData.discount.toFixed(2)}</td>
+            </tr>
+            ` : ''}
+            <tr>
+              <td>TOTAL</td>
+              <td class="amount">R${total.toFixed(2)}</td>
+            </tr>
+            <tr class="total-row">
+              <td>BALANCE DUE</td>
+              <td class="amount">ZAR R${total.toFixed(2)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="footer">
+          <div class="footer-text">
+            Registration Number K2020920761<br>
+            Payment Details<br>
+            Account Name: AMN Funeral Services<br>
+            Bank: FNB<br>
+            Account number: 63092451681
+          </div>
+          <div style="text-align: center; margin-top: 20px; font-weight: bold;">
+            Ready To Serve The Community
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const downloadPDF = () => {
+    console.log('Starting direct PDF download for invoice');
     
     try {
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        console.error('Failed to open print window - popup blocked');
-        toast({
-          title: "PDF Generation Failed",
-          description: "Please allow popups for this site and try again",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const total = calculateTotal();
-      const pdfContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Invoice ${invoiceData.invoiceNumber}</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            @media print {
-              body { margin: 0 !important; }
-              .no-print { display: none !important; }
-              @page { margin: 0.5in; }
-            }
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 0; 
-              padding: 10px; 
-              font-size: 12px;
-              line-height: 1.3;
-              background: white;
-            }
-            .header { 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: flex-start; 
-              margin-bottom: 20px;
-              flex-wrap: wrap;
-            }
-            @media (max-width: 600px) {
-              body { padding: 5px; font-size: 11px; }
-              .header { flex-direction: column; text-align: center; }
-              .invoice-info { text-align: center; margin-top: 15px; }
-              .logo { width: 60px; height: 45px; }
-              .company-name { font-size: 16px; }
-              table { font-size: 10px; }
-              th, td { padding: 6px 2px; }
-            }
-            .logo-section { display: flex; align-items: center; flex-wrap: wrap; }
-            .logo { width: 80px; height: 60px; margin-right: 15px; }
-            .logo img { width: 100%; height: 100%; object-fit: contain; }
-            .company-name { font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a; }
-            .company-details { color: #666; margin-top: 5px; font-size: 11px; }
-            .invoice-info { text-align: right; }
-            .invoice-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-            .client-section { margin: 20px 0; }
-            .bill-to { font-weight: bold; margin-bottom: 8px; }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin: 15px 0; 
-              font-size: 11px;
-            }
-            th, td { 
-              padding: 8px 4px; 
-              text-align: left; 
-              border-bottom: 1px solid #ddd; 
-              word-wrap: break-word;
-            }
-            th { background-color: #f8f9fa; font-weight: bold; }
-            .amount { text-align: right; }
-            .totals { margin-top: 15px; }
-            .totals table { width: 100%; max-width: 250px; margin-left: auto; }
-            .total-row { font-weight: bold; font-size: 14px; }
-            .footer { 
-              margin-top: 30px; 
-              padding-top: 15px; 
-              border-top: 1px solid #ddd; 
-              font-size: 10px;
-            }
-            .footer-text { color: #666; }
-            .balance-due { 
-              background-color: #f8f9fa; 
-              padding: 10px; 
-              text-align: center; 
-              font-size: 16px; 
-              font-weight: bold; 
-              margin: 15px 0; 
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="logo-section">
-              <div class="logo">
-                <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" onerror="this.style.display='none'" />
-              </div>
-              <div class="company-info">
-                <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
-                <div class="company-details">
-                  30 Suncity<br>
-                  Orchard, De Dorms<br>
-                  6840<br>
-                  067 333 4472<br>
-                  anhamburo14@gmail.com
-                </div>
-              </div>
-            </div>
-            <div class="invoice-info">
-              <div class="invoice-title">ALEX'S FUNERAL SERVICE'S<br>${invoiceData.invoiceNumber}</div>
-              <div style="margin-top: 15px;">
-                <strong>DATE</strong><br>
-                ${new Date(invoiceData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </div>
-              <div style="margin-top: 10px;">
-                <strong>DUE</strong><br>
-                ${invoiceData.dueDate}
-              </div>
-              <div style="margin-top: 10px;">
-                <strong>BALANCE DUE</strong><br>
-                ZAR R${total.toFixed(2)}
-              </div>
-            </div>
-          </div>
-
-          <div class="client-section">
-            <div class="bill-to">BILL TO</div>
-            <div>${invoiceData.clientName || 'Client'}</div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 40%;">DESCRIPTION</th>
-                <th class="amount" style="width: 20%;">RATE</th>
-                <th class="amount" style="width: 15%;">QTY</th>
-                <th class="amount" style="width: 25%;">AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoiceData.items.map(item => `
-                <tr>
-                  <td>${item.description || 'N/A'}</td>
-                  <td class="amount">R${(item.rate || 0).toFixed(2)}</td>
-                  <td class="amount">${item.qty || 0}</td>
-                  <td class="amount">R${(item.amount || 0).toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <div class="totals">
-            <table>
-              ${invoiceData.discount > 0 ? `
-              <tr>
-                <td>DISCOUNT</td>
-                <td class="amount">-R${invoiceData.discount.toFixed(2)}</td>
-              </tr>
-              ` : ''}
-              <tr>
-                <td>TOTAL</td>
-                <td class="amount">R${total.toFixed(2)}</td>
-              </tr>
-              <tr class="total-row">
-                <td>BALANCE DUE</td>
-                <td class="amount">ZAR R${total.toFixed(2)}</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="footer">
-            <div class="footer-text">
-              Registration Number K2020920761<br>
-              Payment Details<br>
-              Account Name: AMN Funeral Services<br>
-              Bank: FNB<br>
-              Account number: 63092451681
-            </div>
-            <div style="text-align: center; margin-top: 20px; font-weight: bold;">
-              Ready To Serve The Community
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
+      const pdfContent = generatePDFContent();
+      const blob = new Blob([pdfContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
       
-      printWindow.document.write(pdfContent);
-      printWindow.document.close();
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice_${invoiceData.invoiceNumber}.html`;
       
-      // Wait for content to load before printing
-      printWindow.onload = () => {
-        console.log('Print window loaded, initiating print');
-        setTimeout(() => {
-          try {
-            printWindow.print();
-            console.log('Print dialog opened successfully');
-            
-            // Close window after a delay to allow printing
-            setTimeout(() => {
-              printWindow.close();
-              console.log('Print window closed');
-            }, 1000);
-            
-            toast({
-              title: "PDF Generated",
-              description: "Invoice PDF has been generated and is ready for download",
-            });
-          } catch (printError) {
-            console.error('Print error:', printError);
-            toast({
-              title: "Print Error",
-              description: "There was an issue with the print dialog. Please try again.",
-              variant: "destructive"
-            });
-          }
-        }, 500);
-      };
-
-      printWindow.onerror = (error) => {
-        console.error('Print window error:', error);
-        toast({
-          title: "PDF Generation Error",
-          description: "There was an issue generating the PDF. Please try again.",
-          variant: "destructive"
-        });
-      };
-
-    } catch (error) {
-      console.error('PDF generation error:', error);
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      
       toast({
-        title: "PDF Generation Failed",
-        description: "Unable to generate PDF. Please try again.",
+        title: "Download Started",
+        description: "Invoice file has been downloaded to your device",
+      });
+      
+    } catch (error) {
+      console.error('PDF download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Unable to download the invoice. Please try again.",
         variant: "destructive"
       });
     }
@@ -321,199 +295,226 @@ const InvoiceGenerator = () => {
               </Button>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">Invoice</h1>
             </div>
-            <Button onClick={generatePDF} size="sm" className="bg-green-600 hover:bg-green-700">
-              <Download className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Generate </span>PDF
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setShowPreview(!showPreview)} size="sm" variant="outline">
+                <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Show'} </span>Preview
+              </Button>
+              <Button onClick={downloadPDF} size="sm" className="bg-green-600 hover:bg-green-700">
+                <Download className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Download </span>PDF
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto p-3 sm:p-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center text-lg">
-              <Calculator className="w-5 h-5 mr-2" />
-              Invoice Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="details" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="details" className="text-xs sm:text-sm">Details</TabsTrigger>
-                <TabsTrigger value="items" className="text-xs sm:text-sm">Items</TabsTrigger>
-                <TabsTrigger value="summary" className="text-xs sm:text-sm">Summary</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="details" className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="invoiceNumber" className="text-sm font-medium">Invoice Number</Label>
-                    <Input
-                      id="invoiceNumber"
-                      value={invoiceData.invoiceNumber}
-                      onChange={(e) => setInvoiceData({...invoiceData, invoiceNumber: e.target.value})}
-                      className="mt-1"
-                    />
+      <div className="max-w-6xl mx-auto p-3 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Invoice Form */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <Calculator className="w-5 h-5 mr-2" />
+                Invoice Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="details" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
+                  <TabsTrigger value="details" className="text-xs sm:text-sm">Details</TabsTrigger>
+                  <TabsTrigger value="items" className="text-xs sm:text-sm">Items</TabsTrigger>
+                  <TabsTrigger value="summary" className="text-xs sm:text-sm">Summary</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="details" className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="invoiceNumber" className="text-sm font-medium">Invoice Number</Label>
+                      <Input
+                        id="invoiceNumber"
+                        value={invoiceData.invoiceNumber}
+                        onChange={(e) => setInvoiceData({...invoiceData, invoiceNumber: e.target.value})}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="date" className="text-sm font-medium">Date</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={invoiceData.date}
+                        onChange={(e) => setInvoiceData({...invoiceData, date: e.target.value})}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="date" className="text-sm font-medium">Date</Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={invoiceData.date}
-                      onChange={(e) => setInvoiceData({...invoiceData, date: e.target.value})}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="dueDate" className="text-sm font-medium">Due Date</Label>
-                    <Input
-                      id="dueDate"
-                      value={invoiceData.dueDate}
-                      onChange={(e) => setInvoiceData({...invoiceData, dueDate: e.target.value})}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="clientName" className="text-sm font-medium">Client Name</Label>
-                  <Input
-                    id="clientName"
-                    value={invoiceData.clientName}
-                    onChange={(e) => setInvoiceData({...invoiceData, clientName: e.target.value})}
-                    placeholder="Enter client name"
-                    className="mt-1"
-                  />
-                </div>
-              </TabsContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="dueDate" className="text-sm font-medium">Due Date</Label>
+                      <Input
+                        id="dueDate"
+                        value={invoiceData.dueDate}
+                        onChange={(e) => setInvoiceData({...invoiceData, dueDate: e.target.value})}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="clientName" className="text-sm font-medium">Client Name</Label>
+                      <Input
+                        id="clientName"
+                        value={invoiceData.clientName}
+                        onChange={(e) => setInvoiceData({...invoiceData, clientName: e.target.value})}
+                        placeholder="Enter client name"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="items" className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Items</h3>
-                  <Button onClick={addItem} size="sm">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add
+                <TabsContent value="items" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Items</h3>
+                    <Button onClick={() => setInvoiceData({
+                      ...invoiceData,
+                      items: [...invoiceData.items, { description: '', rate: 0, qty: 1, amount: 0 }]
+                    })} size="sm">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {invoiceData.items.map((item, index) => (
+                      <Card key={index} className="p-3">
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs text-gray-600">Description</Label>
+                            <Input
+                              value={item.description}
+                              onChange={(e) => {
+                                const newItems = [...invoiceData.items];
+                                newItems[index] = { ...newItems[index], description: e.target.value };
+                                setInvoiceData({ ...invoiceData, items: newItems });
+                              }}
+                              placeholder="Description"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <Label className="text-xs text-gray-600">Rate</Label>
+                              <Input
+                                type="number"
+                                value={item.rate}
+                                onChange={(e) => {
+                                  const newItems = [...invoiceData.items];
+                                  const rate = Number(e.target.value);
+                                  newItems[index] = { ...newItems[index], rate, amount: rate * newItems[index].qty };
+                                  setInvoiceData({ ...invoiceData, items: newItems });
+                                }}
+                                placeholder="Rate"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-600">Qty</Label>
+                              <Input
+                                type="number"
+                                value={item.qty}
+                                onChange={(e) => {
+                                  const newItems = [...invoiceData.items];
+                                  const qty = Number(e.target.value);
+                                  newItems[index] = { ...newItems[index], qty, amount: newItems[index].rate * qty };
+                                  setInvoiceData({ ...invoiceData, items: newItems });
+                                }}
+                                placeholder="Qty"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-gray-600">Amount</Label>
+                              <Input
+                                value={`R${item.amount.toFixed(2)}`}
+                                readOnly
+                                className="bg-gray-50 mt-1"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newItems = invoiceData.items.filter((_, i) => i !== index);
+                                setInvoiceData({ ...invoiceData, items: newItems });
+                              }}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="summary" className="space-y-6">
+                  <div>
+                    <Label htmlFor="discount" className="text-sm font-medium">Discount (R)</Label>
+                    <Input
+                      id="discount"
+                      type="number"
+                      value={invoiceData.discount}
+                      onChange={(e) => setInvoiceData({...invoiceData, discount: Number(e.target.value)})}
+                      className="mt-1 max-w-xs"
+                    />
+                  </div>
+                  
+                  <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
+                    <CardContent className="pt-6">
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 mb-2">Total Invoice Amount</div>
+                        <div className="text-3xl font-bold text-green-700">
+                          R{calculateTotal().toFixed(2)}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Button 
+                    onClick={downloadPDF} 
+                    className="w-full bg-green-600 hover:bg-green-700 py-6 text-lg"
+                  >
+                    <Download className="w-5 h-5 mr-2" />
+                    Download PDF Invoice
                   </Button>
-                </div>
-                
-                <div className="space-y-3">
-                  {invoiceData.items.map((item, index) => (
-                    <Card key={index} className="p-3">
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-gray-600">Description</Label>
-                          <Input
-                            value={item.description}
-                            onChange={(e) => updateItem(index, 'description', e.target.value)}
-                            placeholder="Description"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div>
-                            <Label className="text-xs text-gray-600">Rate</Label>
-                            <Input
-                              type="number"
-                              value={item.rate}
-                              onChange={(e) => updateItem(index, 'rate', Number(e.target.value))}
-                              placeholder="Rate"
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-gray-600">Qty</Label>
-                            <Input
-                              type="number"
-                              value={item.qty}
-                              onChange={(e) => updateItem(index, 'qty', Number(e.target.value))}
-                              placeholder="Qty"
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-gray-600">Amount</Label>
-                            <Input
-                              value={`R${item.amount.toFixed(2)}`}
-                              readOnly
-                              className="bg-gray-50 mt-1"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeItem(index)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
 
-              <TabsContent value="summary" className="space-y-6">
-                <div>
-                  <Label htmlFor="discount" className="text-sm font-medium">Discount (R)</Label>
-                  <Input
-                    id="discount"
-                    type="number"
-                    value={invoiceData.discount}
-                    onChange={(e) => setInvoiceData({...invoiceData, discount: Number(e.target.value)})}
-                    className="mt-1 max-w-xs"
-                  />
-                </div>
-                
-                <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600 mb-2">Total Invoice Amount</div>
-                      <div className="text-3xl font-bold text-green-700">
-                        R{calculateTotal().toFixed(2)}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <div className="space-y-2 text-sm text-gray-600">
-                  <h4 className="font-semibold text-gray-900">Invoice Summary:</h4>
-                  <div className="flex justify-between">
-                    <span>Items Count:</span>
-                    <span>{invoiceData.items.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>R{invoiceData.items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}</span>
-                  </div>
-                  {invoiceData.discount > 0 && (
-                    <div className="flex justify-between text-red-600">
-                      <span>Discount:</span>
-                      <span>-R{invoiceData.discount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                    <span>Total:</span>
-                    <span>R{calculateTotal().toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={generatePDF} 
-                  className="w-full bg-green-600 hover:bg-green-700 py-6 text-lg"
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Generate PDF Invoice
-                </Button>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+          {/* Preview Section */}
+          {showPreview && (
+            <Card className="lg:sticky lg:top-20 lg:h-fit">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg">
+                  <Eye className="w-5 h-5 mr-2" />
+                  Invoice Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="border rounded-lg p-4 bg-white text-xs overflow-auto max-h-96"
+                  dangerouslySetInnerHTML={{ __html: generatePDFContent() }}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
