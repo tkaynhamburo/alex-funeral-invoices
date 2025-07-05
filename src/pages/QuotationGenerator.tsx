@@ -68,41 +68,70 @@ const QuotationGenerator = () => {
   };
 
   const generatePDF = () => {
-    const isMobile = window.innerWidth <= 768;
+    console.log('Starting PDF generation for quotation');
     
-    if (isMobile) {
-      // Create a blob URL for mobile PDF generation
-      const pdfContent = generatePDFContent();
-      const blob = new Blob([pdfContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      // Open in new tab/window for mobile
-      const newWindow = window.open(url, '_blank');
-      if (newWindow) {
-        newWindow.onload = () => {
-          setTimeout(() => {
-            newWindow.print();
-            URL.revokeObjectURL(url);
-          }, 1000);
-        };
-      }
-    } else {
-      // Desktop approach
+    try {
       const printWindow = window.open('', '_blank');
-      if (!printWindow) return;
-      
-      printWindow.document.write(generatePDFContent());
-      printWindow.document.close();
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 500);
-    }
+      if (!printWindow) {
+        console.error('Failed to open print window - popup blocked');
+        toast({
+          title: "PDF Generation Failed",
+          description: "Please allow popups for this site and try again",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    toast({
-      title: "PDF Generated",
-      description: "Quotation PDF has been generated and is ready for download",
-    });
+      const pdfContent = generatePDFContent();
+      printWindow.document.write(pdfContent);
+      printWindow.document.close();
+      
+      // Wait for content to load before printing
+      printWindow.onload = () => {
+        console.log('Print window loaded, initiating print');
+        setTimeout(() => {
+          try {
+            printWindow.print();
+            console.log('Print dialog opened successfully');
+            
+            // Close window after a delay to allow printing
+            setTimeout(() => {
+              printWindow.close();
+              console.log('Print window closed');
+            }, 1000);
+            
+            toast({
+              title: "PDF Generated",
+              description: "Quotation PDF has been generated and is ready for download",
+            });
+          } catch (printError) {
+            console.error('Print error:', printError);
+            toast({
+              title: "Print Error",
+              description: "There was an issue with the print dialog. Please try again.",
+              variant: "destructive"
+            });
+          }
+        }, 500);
+      };
+
+      printWindow.onerror = (error) => {
+        console.error('Print window error:', error);
+        toast({
+          title: "PDF Generation Error",
+          description: "There was an issue generating the PDF. Please try again.",
+          variant: "destructive"
+        });
+      };
+
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "Unable to generate PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const generatePDFContent = () => {
@@ -118,6 +147,7 @@ const QuotationGenerator = () => {
           @media print {
             body { margin: 0 !important; }
             .no-print { display: none !important; }
+            @page { margin: 0.5in; }
           }
           body { 
             font-family: Arial, sans-serif; 
@@ -125,6 +155,7 @@ const QuotationGenerator = () => {
             padding: 10px; 
             font-size: 12px;
             line-height: 1.3;
+            background: white;
           }
           .header { 
             display: flex; 
@@ -197,7 +228,7 @@ const QuotationGenerator = () => {
         <div class="header">
           <div class="logo-section">
             <div class="logo">
-              <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" />
+              <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" onerror="this.style.display='none'" />
             </div>
             <div class="company-info">
               <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
@@ -245,10 +276,10 @@ const QuotationGenerator = () => {
           <tbody>
             ${quotationData.items.map(item => `
               <tr>
-                <td>${item.description}</td>
-                <td class="amount">R${item.rate.toFixed(2)}</td>
-                <td class="amount">${item.qty}</td>
-                <td class="amount">R${item.amount.toFixed(2)}</td>
+                <td>${item.description || 'N/A'}</td>
+                <td class="amount">R${(item.rate || 0).toFixed(2)}</td>
+                <td class="amount">${item.qty || 0}</td>
+                <td class="amount">R${(item.amount || 0).toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>

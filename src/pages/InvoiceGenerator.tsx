@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -70,195 +69,244 @@ const InvoiceGenerator = () => {
   };
 
   const generatePDF = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const total = calculateTotal();
+    console.log('Starting PDF generation for invoice');
     
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Invoice ${invoiceData.invoiceNumber}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          @media print {
-            body { margin: 0 !important; }
-            .no-print { display: none !important; }
-          }
-          body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 10px; 
-            font-size: 12px;
-            line-height: 1.3;
-          }
-          .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-          }
-          @media (max-width: 600px) {
-            .header { flex-direction: column; text-align: center; }
-            .invoice-info { text-align: center; margin-top: 15px; }
-          }
-          .logo-section { display: flex; align-items: center; flex-wrap: wrap; }
-          .logo { width: 80px; height: 60px; margin-right: 15px; }
-          .logo img { width: 100%; height: 100%; object-fit: contain; }
-          .company-name { font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a; }
-          .company-details { color: #666; margin-top: 5px; font-size: 11px; }
-          .invoice-info { text-align: right; }
-          .invoice-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-          .client-section { margin: 20px 0; }
-          .bill-to { font-weight: bold; margin-bottom: 8px; }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 15px 0; 
-            font-size: 11px;
-          }
-          th, td { 
-            padding: 8px 4px; 
-            text-align: left; 
-            border-bottom: 1px solid #ddd; 
-            word-wrap: break-word;
-          }
-          th { background-color: #f8f9fa; font-weight: bold; }
-          .amount { text-align: right; }
-          .totals { margin-top: 15px; }
-          .totals table { width: 100%; max-width: 250px; margin-left: auto; }
-          .total-row { font-weight: bold; font-size: 14px; }
-          .footer { 
-            margin-top: 30px; 
-            padding-top: 15px; 
-            border-top: 1px solid #ddd; 
-            font-size: 10px;
-          }
-          .footer-text { color: #666; }
-          .balance-due { 
-            background-color: #f8f9fa; 
-            padding: 10px; 
-            text-align: center; 
-            font-size: 16px; 
-            font-weight: bold; 
-            margin: 15px 0; 
-          }
-          @media (max-width: 600px) {
-            body { padding: 5px; font-size: 11px; }
-            .logo { width: 60px; height: 45px; }
-            .company-name { font-size: 16px; }
-            table { font-size: 10px; }
-            th, td { padding: 6px 2px; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="logo-section">
-            <div class="logo">
-              <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" />
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        console.error('Failed to open print window - popup blocked');
+        toast({
+          title: "PDF Generation Failed",
+          description: "Please allow popups for this site and try again",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const total = calculateTotal();
+      const pdfContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Invoice ${invoiceData.invoiceNumber}</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            @media print {
+              body { margin: 0 !important; }
+              .no-print { display: none !important; }
+              @page { margin: 0.5in; }
+            }
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 10px; 
+              font-size: 12px;
+              line-height: 1.3;
+              background: white;
+            }
+            .header { 
+              display: flex; 
+              justify-content: space-between; 
+              align-items: flex-start; 
+              margin-bottom: 20px;
+              flex-wrap: wrap;
+            }
+            @media (max-width: 600px) {
+              body { padding: 5px; font-size: 11px; }
+              .header { flex-direction: column; text-align: center; }
+              .invoice-info { text-align: center; margin-top: 15px; }
+              .logo { width: 60px; height: 45px; }
+              .company-name { font-size: 16px; }
+              table { font-size: 10px; }
+              th, td { padding: 6px 2px; }
+            }
+            .logo-section { display: flex; align-items: center; flex-wrap: wrap; }
+            .logo { width: 80px; height: 60px; margin-right: 15px; }
+            .logo img { width: 100%; height: 100%; object-fit: contain; }
+            .company-name { font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a; }
+            .company-details { color: #666; margin-top: 5px; font-size: 11px; }
+            .invoice-info { text-align: right; }
+            .invoice-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+            .client-section { margin: 20px 0; }
+            .bill-to { font-weight: bold; margin-bottom: 8px; }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin: 15px 0; 
+              font-size: 11px;
+            }
+            th, td { 
+              padding: 8px 4px; 
+              text-align: left; 
+              border-bottom: 1px solid #ddd; 
+              word-wrap: break-word;
+            }
+            th { background-color: #f8f9fa; font-weight: bold; }
+            .amount { text-align: right; }
+            .totals { margin-top: 15px; }
+            .totals table { width: 100%; max-width: 250px; margin-left: auto; }
+            .total-row { font-weight: bold; font-size: 14px; }
+            .footer { 
+              margin-top: 30px; 
+              padding-top: 15px; 
+              border-top: 1px solid #ddd; 
+              font-size: 10px;
+            }
+            .footer-text { color: #666; }
+            .balance-due { 
+              background-color: #f8f9fa; 
+              padding: 10px; 
+              text-align: center; 
+              font-size: 16px; 
+              font-weight: bold; 
+              margin: 15px 0; 
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo-section">
+              <div class="logo">
+                <img src="/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png" alt="Alex's Funeral Services Logo" onerror="this.style.display='none'" />
+              </div>
+              <div class="company-info">
+                <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
+                <div class="company-details">
+                  30 Suncity<br>
+                  Orchard, De Dorms<br>
+                  6840<br>
+                  067 333 4472<br>
+                  anhamburo14@gmail.com
+                </div>
+              </div>
             </div>
-            <div class="company-info">
-              <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
-              <div class="company-details">
-                30 Suncity<br>
-                Orchard, De Dorms<br>
-                6840<br>
-                067 333 4472<br>
-                anhamburo14@gmail.com
+            <div class="invoice-info">
+              <div class="invoice-title">ALEX'S FUNERAL SERVICE'S<br>${invoiceData.invoiceNumber}</div>
+              <div style="margin-top: 15px;">
+                <strong>DATE</strong><br>
+                ${new Date(invoiceData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+              <div style="margin-top: 10px;">
+                <strong>DUE</strong><br>
+                ${invoiceData.dueDate}
+              </div>
+              <div style="margin-top: 10px;">
+                <strong>BALANCE DUE</strong><br>
+                ZAR R${total.toFixed(2)}
               </div>
             </div>
           </div>
-          <div class="invoice-info">
-            <div class="invoice-title">ALEX'S FUNERAL SERVICE'S<br>${invoiceData.invoiceNumber}</div>
-            <div style="margin-top: 15px;">
-              <strong>DATE</strong><br>
-              ${new Date(invoiceData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </div>
-            <div style="margin-top: 10px;">
-              <strong>DUE</strong><br>
-              ${invoiceData.dueDate}
-            </div>
-            <div style="margin-top: 10px;">
-              <strong>BALANCE DUE</strong><br>
-              ZAR R${total.toFixed(2)}
-            </div>
+
+          <div class="client-section">
+            <div class="bill-to">BILL TO</div>
+            <div>${invoiceData.clientName || 'Client'}</div>
           </div>
-        </div>
 
-        <div class="client-section">
-          <div class="bill-to">BILL TO</div>
-          <div>${invoiceData.clientName || 'Client'}</div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 40%;">DESCRIPTION</th>
-              <th class="amount" style="width: 20%;">RATE</th>
-              <th class="amount" style="width: 15%;">QTY</th>
-              <th class="amount" style="width: 25%;">AMOUNT</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${invoiceData.items.map(item => `
-              <tr>
-                <td>${item.description}</td>
-                <td class="amount">R${item.rate.toFixed(2)}</td>
-                <td class="amount">${item.qty}</td>
-                <td class="amount">R${item.amount.toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <div class="totals">
           <table>
-            ${invoiceData.discount > 0 ? `
-            <tr>
-              <td>DISCOUNT</td>
-              <td class="amount">-R${invoiceData.discount.toFixed(2)}</td>
-            </tr>
-            ` : ''}
-            <tr>
-              <td>TOTAL</td>
-              <td class="amount">R${total.toFixed(2)}</td>
-            </tr>
-            <tr class="total-row">
-              <td>BALANCE DUE</td>
-              <td class="amount">ZAR R${total.toFixed(2)}</td>
-            </tr>
+            <thead>
+              <tr>
+                <th style="width: 40%;">DESCRIPTION</th>
+                <th class="amount" style="width: 20%;">RATE</th>
+                <th class="amount" style="width: 15%;">QTY</th>
+                <th class="amount" style="width: 25%;">AMOUNT</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoiceData.items.map(item => `
+                <tr>
+                  <td>${item.description || 'N/A'}</td>
+                  <td class="amount">R${(item.rate || 0).toFixed(2)}</td>
+                  <td class="amount">${item.qty || 0}</td>
+                  <td class="amount">R${(item.amount || 0).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
           </table>
-        </div>
 
-        <div class="footer">
-          <div class="footer-text">
-            Registration Number K2020920761<br>
-            Payment Details<br>
-            Account Name: AMN Funeral Services<br>
-            Bank: FNB<br>
-            Account number: 63092451681
+          <div class="totals">
+            <table>
+              ${invoiceData.discount > 0 ? `
+              <tr>
+                <td>DISCOUNT</td>
+                <td class="amount">-R${invoiceData.discount.toFixed(2)}</td>
+              </tr>
+              ` : ''}
+              <tr>
+                <td>TOTAL</td>
+                <td class="amount">R${total.toFixed(2)}</td>
+              </tr>
+              <tr class="total-row">
+                <td>BALANCE DUE</td>
+                <td class="amount">ZAR R${total.toFixed(2)}</td>
+              </tr>
+            </table>
           </div>
-          <div style="text-align: center; margin-top: 20px; font-weight: bold;">
-            Ready To Serve The Community
-          </div>
-        </div>
-      </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
 
-    toast({
-      title: "PDF Generated",
-      description: "Invoice PDF has been generated and is ready for download",
-    });
+          <div class="footer">
+            <div class="footer-text">
+              Registration Number K2020920761<br>
+              Payment Details<br>
+              Account Name: AMN Funeral Services<br>
+              Bank: FNB<br>
+              Account number: 63092451681
+            </div>
+            <div style="text-align: center; margin-top: 20px; font-weight: bold;">
+              Ready To Serve The Community
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(pdfContent);
+      printWindow.document.close();
+      
+      // Wait for content to load before printing
+      printWindow.onload = () => {
+        console.log('Print window loaded, initiating print');
+        setTimeout(() => {
+          try {
+            printWindow.print();
+            console.log('Print dialog opened successfully');
+            
+            // Close window after a delay to allow printing
+            setTimeout(() => {
+              printWindow.close();
+              console.log('Print window closed');
+            }, 1000);
+            
+            toast({
+              title: "PDF Generated",
+              description: "Invoice PDF has been generated and is ready for download",
+            });
+          } catch (printError) {
+            console.error('Print error:', printError);
+            toast({
+              title: "Print Error",
+              description: "There was an issue with the print dialog. Please try again.",
+              variant: "destructive"
+            });
+          }
+        }, 500);
+      };
+
+      printWindow.onerror = (error) => {
+        console.error('Print window error:', error);
+        toast({
+          title: "PDF Generation Error",
+          description: "There was an issue generating the PDF. Please try again.",
+          variant: "destructive"
+        });
+      };
+
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "Unable to generate PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
