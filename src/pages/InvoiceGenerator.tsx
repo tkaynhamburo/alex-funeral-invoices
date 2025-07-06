@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -299,7 +298,7 @@ const InvoiceGenerator = () => {
       pdf.text(invoiceData.dueDate, 140, 62);
       
       pdf.text('BALANCE', 140, 72);
-      pdf.text('DUE', 157, 72);
+      pdf.text('DUE', 165, 72);
       pdf.setFont('helvetica', 'bold');
       pdf.text(`R${total.toFixed(2)}`, 140, 77);
 
@@ -349,8 +348,8 @@ const InvoiceGenerator = () => {
       
       pdf.setFont('helvetica', 'bold');
       pdf.text('BALANCE', 135, yPos);
-      pdf.text('DUE', 152, yPos);
-      pdf.text(`R${total.toFixed(2)}`, 160, yPos);
+      pdf.text('DUE', 160, yPos);
+      pdf.text(`R${total.toFixed(2)}`, 175, yPos);
 
       // Footer
       yPos += 20;
