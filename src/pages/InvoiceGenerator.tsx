@@ -181,7 +181,7 @@ const InvoiceGenerator = () => {
             </div>
             <div style="margin-top: 10px;">
               <strong>BALANCE DUE</strong><br>
-              ZAR R${total.toFixed(2)}
+              R${total.toFixed(2)}
             </div>
           </div>
         </div>
@@ -226,7 +226,7 @@ const InvoiceGenerator = () => {
             </tr>
             <tr class="total-row">
               <td>BALANCE DUE</td>
-              <td class="amount">ZAR R${total.toFixed(2)}</td>
+              <td class="amount">R${total.toFixed(2)}</td>
             </tr>
           </table>
         </div>
@@ -299,7 +299,7 @@ const InvoiceGenerator = () => {
       
       pdf.text('BALANCE DUE', 140, 72);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`ZAR R${total.toFixed(2)}`, 140, 77);
+      pdf.text(`R${total.toFixed(2)}`, 140, 77);
 
       // Bill to section
       pdf.setFont('helvetica', 'bold');
@@ -347,7 +347,7 @@ const InvoiceGenerator = () => {
       
       pdf.setFont('helvetica', 'bold');
       pdf.text('BALANCE DUE', 135, yPos);
-      pdf.text(`ZAR R${total.toFixed(2)}`, 160, yPos);
+      pdf.text(`R${total.toFixed(2)}`, 160, yPos);
 
       // Footer
       yPos += 20;
