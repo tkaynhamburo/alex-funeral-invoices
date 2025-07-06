@@ -298,7 +298,8 @@ const InvoiceGenerator = () => {
       pdf.text('DUE', 140, 57);
       pdf.text(invoiceData.dueDate, 140, 62);
       
-      pdf.text('BALANCE     DUE', 140, 72);
+      pdf.text('BALANCE', 140, 72);
+      pdf.text('DUE', 157, 72);
       pdf.setFont('helvetica', 'bold');
       pdf.text(`R${total.toFixed(2)}`, 140, 77);
 
@@ -347,7 +348,8 @@ const InvoiceGenerator = () => {
       yPos += 8;
       
       pdf.setFont('helvetica', 'bold');
-      pdf.text('BALANCE     DUE', 135, yPos);
+      pdf.text('BALANCE', 135, yPos);
+      pdf.text('DUE', 152, yPos);
       pdf.text(`R${total.toFixed(2)}`, 160, yPos);
 
       // Footer
