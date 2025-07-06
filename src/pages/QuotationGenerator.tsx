@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Download, Plus, Trash2, Eye, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
 
 interface QuotationItem {
   description: string;
@@ -237,38 +238,157 @@ const QuotationGenerator = () => {
     `;
   };
 
-  const downloadPDF = () => {
-    console.log('Starting automatic file download for quotation');
+  const downloadPDF = async () => {
+    console.log('Starting PDF download for quotation');
     
     try {
-      const pdfContent = generatePDFContent();
-      const blob = new Blob([pdfContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
+      const pdf = new jsPDF();
+      const total = calculateTotal();
       
-      // Create a temporary invisible download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = `Quotation_${quotationData.quotationNumber}.html`;
-      downloadLink.style.display = 'none';
+      // Add logo
+      try {
+        const logoUrl = '/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png';
+        pdf.addImage(logoUrl, 'PNG', 15, 15, 30, 22);
+      } catch (error) {
+        console.log('Logo not loaded, continuing without it');
+      }
+
+      // Company header
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(30, 58, 138);
+      pdf.text("ALEX'S FUNERAL SERVICES", 50, 25);
       
-      // Add to DOM, trigger download, then remove
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(102, 102, 102);
+      pdf.text('30 Suncity', 50, 32);
+      pdf.text('Orchard, De Dorms', 50, 37);
+      pdf.text('6840', 50, 42);
+      pdf.text('067 333 4472', 50, 47);
+      pdf.text('anhamburo14@gmail.com', 50, 52);
+
+      // Quotation info (right side)
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(37, 99, 235);
+      pdf.text('QUOTATION', 140, 25);
+      pdf.text(quotationData.quotationNumber, 140, 32);
       
-      // Clean up the blob URL
-      URL.revokeObjectURL(url);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('DATE', 140, 42);
+      pdf.text(new Date(quotationData.date).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }), 140, 47);
+      
+      pdf.text('VALID UNTIL', 140, 57);
+      pdf.text(new Date(quotationData.validUntil).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }), 140, 62);
+
+      // Quote to section
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('QUOTE TO', 15, 90);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(quotationData.clientName || 'Prospective Client', 15, 97);
+
+      // Validity notice
+      pdf.setFillColor(254, 243, 199);
+      pdf.rect(15, 105, 180, 12, 'F');
+      pdf.setFontSize(9);
+      pdf.text('Note: This quotation is valid until ' + 
+        new Date(quotationData.validUntil).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }) + '. Prices may be subject to change after this date.', 20, 111);
+
+      // Items table header
+      let yPos = 125;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFillColor(248, 249, 250);
+      pdf.rect(15, yPos, 180, 8, 'F');
+      pdf.text('DESCRIPTION', 20, yPos + 5);
+      pdf.text('RATE', 110, yPos + 5);
+      pdf.text('QTY', 135, yPos + 5);
+      pdf.text('AMOUNT', 160, yPos + 5);
+
+      // Items
+      yPos += 12;
+      pdf.setFont('helvetica', 'normal');
+      quotationData.items.forEach((item) => {
+        if (yPos > 250) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        pdf.text(item.description || 'N/A', 20, yPos);
+        pdf.text(`R${(item.rate || 0).toFixed(2)}`, 110, yPos);
+        pdf.text(String(item.qty || 0), 135, yPos);
+        pdf.text(`R${(item.amount || 0).toFixed(2)}`, 160, yPos);
+        yPos += 8;
+      });
+
+      // Totals
+      yPos += 10;
+      if (quotationData.discount > 0) {
+        pdf.text('DISCOUNT', 135, yPos);
+        pdf.text(`-R${quotationData.discount.toFixed(2)}`, 160, yPos);
+        yPos += 8;
+      }
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('TOTAL QUOTE AMOUNT', 135, yPos);
+      pdf.text(`ZAR R${total.toFixed(2)}`, 160, yPos);
+
+      // Total amount highlight box
+      yPos += 15;
+      pdf.setFillColor(239, 246, 255);
+      pdf.rect(15, yPos, 180, 12, 'F');
+      pdf.setFontSize(14);
+      pdf.setTextColor(37, 99, 235);
+      pdf.text(`Total Quotation Amount: ZAR R${total.toFixed(2)}`, 70, yPos + 7);
+
+      // Footer
+      yPos += 25;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Terms & Conditions:', 15, yPos);
+      pdf.text('• This quote is valid for 30 days from the date of issue', 15, yPos + 5);
+      pdf.text('• Payment terms: As agreed upon acceptance', 15, yPos + 10);
+      pdf.text('• All prices are inclusive of applicable taxes', 15, yPos + 15);
+      
+      pdf.text('Registration Number K2020920761', 15, yPos + 25);
+      pdf.text('Payment Details', 15, yPos + 30);
+      pdf.text('Account Name: AMN Funeral Services', 15, yPos + 35);
+      pdf.text('Bank: FNB', 15, yPos + 40);
+      pdf.text('Account number: 63092451681', 15, yPos + 45);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(37, 99, 235);
+      pdf.text('Ready To Serve The Community', 70, yPos + 55);
+
+      // Save the PDF
+      pdf.save(`Quotation_${quotationData.quotationNumber}.pdf`);
       
       toast({
         title: "Download Complete",
-        description: `Quotation ${quotationData.quotationNumber} has been downloaded successfully`,
+        description: `Quotation ${quotationData.quotationNumber} PDF has been downloaded successfully`,
       });
       
     } catch (error) {
-      console.error('Download error:', error);
+      console.error('PDF download error:', error);
       toast({
         title: "Download Failed",
-        description: "Unable to download the quotation. Please try again.",
+        description: "Unable to download the quotation PDF. Please try again.",
         variant: "destructive"
       });
     }

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, Plus, Trash2, Eye, Calculator } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
 
 interface InvoiceItem {
   description: string;
@@ -247,38 +248,133 @@ const InvoiceGenerator = () => {
     `;
   };
 
-  const downloadPDF = () => {
-    console.log('Starting automatic file download for invoice');
+  const downloadPDF = async () => {
+    console.log('Starting PDF download for invoice');
     
     try {
-      const pdfContent = generatePDFContent();
-      const blob = new Blob([pdfContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
+      const pdf = new jsPDF();
+      const total = calculateTotal();
       
-      // Create a temporary invisible download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = `Invoice_${invoiceData.invoiceNumber}.html`;
-      downloadLink.style.display = 'none';
+      // Add logo
+      try {
+        const logoUrl = '/lovable-uploads/eab12e6f-5e51-43d5-9782-de9ca5919f56.png';
+        pdf.addImage(logoUrl, 'PNG', 15, 15, 30, 22);
+      } catch (error) {
+        console.log('Logo not loaded, continuing without it');
+      }
+
+      // Company header
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(30, 58, 138);
+      pdf.text("ALEX'S FUNERAL SERVICES", 50, 25);
       
-      // Add to DOM, trigger download, then remove
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(102, 102, 102);
+      pdf.text('30 Suncity', 50, 32);
+      pdf.text('Orchard, De Dorms', 50, 37);
+      pdf.text('6840', 50, 42);
+      pdf.text('067 333 4472', 50, 47);
+      pdf.text('anhamburo14@gmail.com', 50, 52);
+
+      // Invoice info (right side)
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("ALEX'S FUNERAL SERVICE'S", 140, 25);
+      pdf.text(invoiceData.invoiceNumber, 140, 32);
       
-      // Clean up the blob URL
-      URL.revokeObjectURL(url);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('DATE', 140, 42);
+      pdf.text(new Date(invoiceData.date).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }), 140, 47);
+      
+      pdf.text('DUE', 140, 57);
+      pdf.text(invoiceData.dueDate, 140, 62);
+      
+      pdf.text('BALANCE DUE', 140, 72);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`ZAR R${total.toFixed(2)}`, 140, 77);
+
+      // Bill to section
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('BILL TO', 15, 90);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(invoiceData.clientName || 'Client', 15, 97);
+
+      // Items table header
+      let yPos = 110;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFillColor(248, 249, 250);
+      pdf.rect(15, yPos, 180, 8, 'F');
+      pdf.text('DESCRIPTION', 20, yPos + 5);
+      pdf.text('RATE', 110, yPos + 5);
+      pdf.text('QTY', 135, yPos + 5);
+      pdf.text('AMOUNT', 160, yPos + 5);
+
+      // Items
+      yPos += 12;
+      pdf.setFont('helvetica', 'normal');
+      invoiceData.items.forEach((item) => {
+        if (yPos > 250) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        pdf.text(item.description || 'N/A', 20, yPos);
+        pdf.text(`R${(item.rate || 0).toFixed(2)}`, 110, yPos);
+        pdf.text(String(item.qty || 0), 135, yPos);
+        pdf.text(`R${(item.amount || 0).toFixed(2)}`, 160, yPos);
+        yPos += 8;
+      });
+
+      // Totals
+      yPos += 10;
+      if (invoiceData.discount > 0) {
+        pdf.text('DISCOUNT', 135, yPos);
+        pdf.text(`-R${invoiceData.discount.toFixed(2)}`, 160, yPos);
+        yPos += 8;
+      }
+      
+      pdf.text('TOTAL', 135, yPos);
+      pdf.text(`R${total.toFixed(2)}`, 160, yPos);
+      yPos += 8;
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('BALANCE DUE', 135, yPos);
+      pdf.text(`ZAR R${total.toFixed(2)}`, 160, yPos);
+
+      // Footer
+      yPos += 20;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.text('Registration Number K2020920761', 15, yPos);
+      pdf.text('Payment Details', 15, yPos + 5);
+      pdf.text('Account Name: AMN Funeral Services', 15, yPos + 10);
+      pdf.text('Bank: FNB', 15, yPos + 15);
+      pdf.text('Account number: 63092451681', 15, yPos + 20);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Ready To Serve The Community', 70, yPos + 30);
+
+      // Save the PDF
+      pdf.save(`Invoice_${invoiceData.invoiceNumber}.pdf`);
       
       toast({
         title: "Download Complete",
-        description: `Invoice ${invoiceData.invoiceNumber} has been downloaded successfully`,
+        description: `Invoice ${invoiceData.invoiceNumber} PDF has been downloaded successfully`,
       });
       
     } catch (error) {
-      console.error('Download error:', error);
+      console.error('PDF download error:', error);
       toast({
         title: "Download Failed",
-        description: "Unable to download the invoice. Please try again.",
+        description: "Unable to download the invoice PDF. Please try again.",
         variant: "destructive"
       });
     }
