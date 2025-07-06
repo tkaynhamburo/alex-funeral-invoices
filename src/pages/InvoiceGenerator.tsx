@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -180,7 +181,7 @@ const InvoiceGenerator = () => {
               ${invoiceData.dueDate}
             </div>
             <div style="margin-top: 10px;">
-              <strong>BALANCE DUE</strong><br>
+              <strong>BALANCE &nbsp;&nbsp;&nbsp; DUE</strong><br>
               R${total.toFixed(2)}
             </div>
           </div>
@@ -225,7 +226,7 @@ const InvoiceGenerator = () => {
               <td class="amount">R${total.toFixed(2)}</td>
             </tr>
             <tr class="total-row">
-              <td>BALANCE DUE</td>
+              <td>BALANCE &nbsp;&nbsp;&nbsp; DUE</td>
               <td class="amount">R${total.toFixed(2)}</td>
             </tr>
           </table>
@@ -297,7 +298,7 @@ const InvoiceGenerator = () => {
       pdf.text('DUE', 140, 57);
       pdf.text(invoiceData.dueDate, 140, 62);
       
-      pdf.text('BALANCE DUE', 140, 72);
+      pdf.text('BALANCE     DUE', 140, 72);
       pdf.setFont('helvetica', 'bold');
       pdf.text(`R${total.toFixed(2)}`, 140, 77);
 
@@ -346,7 +347,7 @@ const InvoiceGenerator = () => {
       yPos += 8;
       
       pdf.setFont('helvetica', 'bold');
-      pdf.text('BALANCE DUE', 135, yPos);
+      pdf.text('BALANCE     DUE', 135, yPos);
       pdf.text(`R${total.toFixed(2)}`, 160, yPos);
 
       // Footer
