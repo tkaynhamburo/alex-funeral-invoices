@@ -46,6 +46,7 @@ const InvoiceGenerator = () => {
     const newItems = [...invoiceData.items];
     newItems[index] = { ...newItems[index], [field]: value };
     
+    // Only auto-calculate amount if rate or qty changes, not if amount is directly edited
     if (field === 'rate' || field === 'qty') {
       newItems[index].amount = newItems[index].rate * newItems[index].qty;
     }
@@ -535,9 +536,15 @@ const InvoiceGenerator = () => {
                             <div>
                               <Label className="text-xs text-gray-600">Amount</Label>
                               <Input
-                                value={`R${item.amount.toFixed(2)}`}
-                                readOnly
-                                className="bg-gray-50 mt-1"
+                                type="number"
+                                value={item.amount}
+                                onChange={(e) => {
+                                  const newItems = [...invoiceData.items];
+                                  newItems[index] = { ...newItems[index], amount: Number(e.target.value) };
+                                  setInvoiceData({ ...invoiceData, items: newItems });
+                                }}
+                                placeholder="Amount"
+                                className="mt-1"
                               />
                             </div>
                           </div>

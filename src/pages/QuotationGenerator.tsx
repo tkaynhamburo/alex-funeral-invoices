@@ -539,9 +539,15 @@ const QuotationGenerator = () => {
                           <div>
                             <Label className="text-xs text-gray-600">Amount</Label>
                             <Input
-                              value={`R${item.amount.toFixed(2)}`}
-                              readOnly
-                              className="bg-gray-50 mt-1"
+                              type="number"
+                              value={item.amount}
+                              onChange={(e) => {
+                                const newItems = [...quotationData.items];
+                                newItems[index] = { ...newItems[index], amount: Number(e.target.value) };
+                                setQuotationData({ ...quotationData, items: newItems });
+                              }}
+                              placeholder="Amount"
+                              className="mt-1"
                             />
                           </div>
                         </div>
