@@ -493,29 +493,21 @@ const InvoiceGenerator = () => {
                             <Label className="text-xs text-gray-600">Description</Label>
                             <Input
                               value={item.description}
-                              onChange={(e) => {
-                                const newItems = [...invoiceData.items];
-                                newItems[index] = { ...newItems[index], description: e.target.value };
-                                setInvoiceData({ ...invoiceData, items: newItems });
-                              }}
+                              onChange={(e) => updateItem(index, 'description', e.target.value)}
                               placeholder="Description"
                               className="mt-1"
                             />
                           </div>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
                               <Label className="text-xs text-gray-600">Rate</Label>
                               <Input
                                 type="number"
                                 value={item.rate}
-                                onChange={(e) => {
-                                  const newItems = [...invoiceData.items];
-                                  const rate = Number(e.target.value);
-                                  newItems[index] = { ...newItems[index], rate, amount: rate * newItems[index].qty };
-                                  setInvoiceData({ ...invoiceData, items: newItems });
-                                }}
+                                onChange={(e) => updateItem(index, 'rate', Number(e.target.value))}
                                 placeholder="Rate"
                                 className="mt-1"
+                                inputMode="decimal"
                               />
                             </div>
                             <div>
@@ -523,14 +515,10 @@ const InvoiceGenerator = () => {
                               <Input
                                 type="number"
                                 value={item.qty}
-                                onChange={(e) => {
-                                  const newItems = [...invoiceData.items];
-                                  const qty = Number(e.target.value);
-                                  newItems[index] = { ...newItems[index], qty, amount: newItems[index].rate * qty };
-                                  setInvoiceData({ ...invoiceData, items: newItems });
-                                }}
+                                onChange={(e) => updateItem(index, 'qty', Number(e.target.value))}
                                 placeholder="Qty"
                                 className="mt-1"
+                                inputMode="numeric"
                               />
                             </div>
                             <div>
@@ -538,13 +526,10 @@ const InvoiceGenerator = () => {
                               <Input
                                 type="number"
                                 value={item.amount}
-                                onChange={(e) => {
-                                  const newItems = [...invoiceData.items];
-                                  newItems[index] = { ...newItems[index], amount: Number(e.target.value) };
-                                  setInvoiceData({ ...invoiceData, items: newItems });
-                                }}
+                                onChange={(e) => updateItem(index, 'amount', Number(e.target.value))}
                                 placeholder="Amount"
                                 className="mt-1"
+                                inputMode="decimal"
                               />
                             </div>
                           </div>
