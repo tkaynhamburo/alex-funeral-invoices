@@ -18,6 +18,10 @@ A professional web application for managing invoices and quotations for funeral 
 - Tailwind CSS
 - Vite
 
+## Developer
+
+Created by **Tkay Nhamburo**
+
 ---
 
 © 2025 Alex's Funeral Services. All rights reserved.
