@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,48 @@ const QuotationGenerator = () => {
     ],
     discount: 0
   });
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('quotationData');
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setQuotationData(parsedData);
+        toast({
+          title: "Data Restored",
+          description: "Your previous quotation data has been restored.",
+        });
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    }
+  }, [toast]);
+
+  // Save data to localStorage whenever quotationData changes
+  useEffect(() => {
+    localStorage.setItem('quotationData', JSON.stringify(quotationData));
+  }, [quotationData]);
+
+  // Clear saved data function
+  const clearSavedData = () => {
+    localStorage.removeItem('quotationData');
+    setQuotationData({
+      quotationNumber: `QUO${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+      date: new Date().toISOString().split('T')[0],
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      clientName: '',
+      items: [
+        { description: 'Transport', rate: 13500, qty: 1, amount: 13500 },
+        { description: 'Coffin', rate: 2500, qty: 1, amount: 2500 }
+      ],
+      discount: 0
+    });
+    toast({
+      title: "Data Cleared",
+      description: "All quotation data has been cleared.",
+    });
+  };
 
   const calculateTotal = () => {
     const subtotal = quotationData.items.reduce((sum, item) => sum + item.amount, 0);
@@ -108,9 +150,11 @@ const QuotationGenerator = () => {
           }
           th { background-color: #f8f9fa; font-weight: bold; }
           .amount { text-align: right; }
-          .totals { margin-top: 15px; }
-          .totals table { width: 100%; max-width: 250px; margin-left: auto; }
-          .total-row { font-weight: bold; font-size: 14px; color: #2563eb; }
+          .totals { margin-top: 20px; }
+          .totals table { width: 100%; max-width: 280px; margin-left: auto; }
+          .totals table td { padding: 12px 8px; border-bottom: 1px solid #e5e7eb; }
+          .total-row { font-weight: bold; font-size: 16px; color: #2563eb; background-color: #eff6ff; }
+          .total-row td { padding: 15px 8px; }
           .footer { 
             margin-top: 30px; 
             padding-top: 15px; 
@@ -199,21 +243,25 @@ const QuotationGenerator = () => {
 
         <div class="totals">
           <table>
+            <tr>
+              <td><strong>SUBTOTAL</strong></td>
+              <td class="amount"><strong>R${quotationData.items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}</strong></td>
+            </tr>
             ${quotationData.discount > 0 ? `
             <tr>
-              <td>DISCOUNT</td>
-              <td class="amount">-R${quotationData.discount.toFixed(2)}</td>
+              <td><strong>DISCOUNT</strong></td>
+              <td class="amount"><strong>-R${quotationData.discount.toFixed(2)}</strong></td>
             </tr>
             ` : ''}
             <tr class="total-row">
-              <td>TOTAL QUOTE AMOUNT</td>
-              <td class="amount">ZAR R${total.toFixed(2)}</td>
+              <td><strong>TOTAL QUOTE AMOUNT</strong></td>
+              <td class="amount"><strong>ZAR R${total.toFixed(2)}</strong></td>
             </tr>
           </table>
         </div>
 
         <div class="total-amount">
-          Total Quotation Amount: ZAR R${total.toFixed(2)}
+          <strong>Total Quotation Amount: ZAR R${total.toFixed(2)}</strong>
         </div>
 
         <div class="footer">
@@ -336,25 +384,43 @@ const QuotationGenerator = () => {
         yPos += 8;
       });
 
-      // Totals
+      // Totals section with better spacing
+      yPos += 15;
+      
+      // Subtotal
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('SUBTOTAL', 120, yPos);
+      pdf.text(`R${quotationData.items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}`, 170, yPos);
       yPos += 10;
+      
+      // Discount if applicable
       if (quotationData.discount > 0) {
-        pdf.text('DISCOUNT', 135, yPos);
-        pdf.text(`-R${quotationData.discount.toFixed(2)}`, 160, yPos);
-        yPos += 8;
+        pdf.text('DISCOUNT', 120, yPos);
+        pdf.text(`-R${quotationData.discount.toFixed(2)}`, 170, yPos);
+        yPos += 10;
       }
       
+      // Line separator
+      pdf.setLineWidth(0.5);
+      pdf.line(120, yPos + 2, 195, yPos + 2);
+      yPos += 8;
+      
+      // Total with better formatting
       pdf.setFont('helvetica', 'bold');
-      pdf.text('TOTAL QUOTE AMOUNT', 135, yPos);
-      pdf.text(`ZAR R${total.toFixed(2)}`, 160, yPos);
+      pdf.setFontSize(12);
+      pdf.text('TOTAL QUOTE AMOUNT', 120, yPos);
+      pdf.text(`ZAR R${total.toFixed(2)}`, 170, yPos);
 
-      // Total amount highlight box
-      yPos += 15;
+      // Total amount highlight box with better spacing
+      yPos += 20;
       pdf.setFillColor(239, 246, 255);
-      pdf.rect(15, yPos, 180, 12, 'F');
-      pdf.setFontSize(14);
+      pdf.rect(15, yPos, 180, 15, 'F');
+      pdf.setFontSize(16);
       pdf.setTextColor(37, 99, 235);
-      pdf.text(`Total Quotation Amount: ZAR R${total.toFixed(2)}`, 70, yPos + 7);
+      const totalText = `Total Quotation Amount: ZAR R${total.toFixed(2)}`;
+      const textWidth = pdf.getTextWidth(totalText);
+      const centerX = (210 - textWidth) / 2;
+      pdf.text(totalText, centerX, yPos + 10);
 
       // Footer
       yPos += 25;
@@ -399,7 +465,7 @@ const QuotationGenerator = () => {
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Back</span>
@@ -407,6 +473,10 @@ const QuotationGenerator = () => {
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">Quotation</h1>
             </div>
             <div className="flex items-center gap-2">
+              <Button onClick={clearSavedData} size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+                <Trash2 className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Clear </span>Data
+              </Button>
               <Button onClick={() => setShowPreview(!showPreview)} size="sm" variant="outline">
                 <Eye className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Show'} </span>Preview
@@ -588,16 +658,26 @@ const QuotationGenerator = () => {
                   />
                 </div>
                 <div className="flex items-end">
-                  <div className="text-right w-full">
-                    <div className="text-sm text-gray-600">Total Quote Amount</div>
-                    <div className="text-2xl font-bold text-blue-600">
-                      R{calculateTotal().toFixed(2)}
-                    </div>
-                    {quotationData.discount > 0 && (
-                      <div className="text-sm text-green-600">
-                        Discount Applied: -R{quotationData.discount.toFixed(2)}
+                  <div className="text-right w-full p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                    <div className="space-y-2">
+                      <div className="text-sm text-gray-600">Subtotal</div>
+                      <div className="text-lg font-semibold text-gray-800">
+                        R{quotationData.items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
                       </div>
-                    )}
+                      {quotationData.discount > 0 && (
+                        <>
+                          <div className="text-sm text-green-600">Discount Applied</div>
+                          <div className="text-lg font-semibold text-green-600">
+                            -R{quotationData.discount.toFixed(2)}
+                          </div>
+                        </>
+                      )}
+                      <hr className="border-blue-300" />
+                      <div className="text-sm text-blue-700 font-medium">Total Quote Amount</div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        R{calculateTotal().toFixed(2)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
