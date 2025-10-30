@@ -163,7 +163,7 @@ const InvoiceGenerator = () => {
               <h1 class="company-name">ALEX'S FUNERAL SERVICES</h1>
               <div class="company-details">
                 30 Suncity<br>
-                Orchard, De Dorms<br>
+                Orchard, De Doorns<br>
                 6840<br>
                 067 333 4472<br>
                 anhamburo14@gmail.com
@@ -274,7 +274,7 @@ const InvoiceGenerator = () => {
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(102, 102, 102);
       pdf.text('30 Suncity', 50, 32);
-      pdf.text('Orchard, De Dorms', 50, 37);
+      pdf.text('Orchard, De Doorns', 50, 37);
       pdf.text('6840', 50, 42);
       pdf.text('067 333 4472', 50, 47);
       pdf.text('anhamburo14@gmail.com', 50, 52);
