@@ -9,6 +9,7 @@ import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import InvoiceGenerator from "./pages/InvoiceGenerator";
 import QuotationGenerator from "./pages/QuotationGenerator";
+import ReceiptGenerator from "./pages/ReceiptGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/invoice" element={<InvoiceGenerator />} />
           <Route path="/quotation" element={<QuotationGenerator />} />
+          <Route path="/receipt" element={<ReceiptGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

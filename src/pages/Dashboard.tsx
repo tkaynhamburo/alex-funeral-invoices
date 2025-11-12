@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Calculator, LogOut, Home } from 'lucide-react';
+import { FileText, Calculator, LogOut, Home, Receipt } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-                <p className="text-gray-600">Invoice & Quotation Management</p>
+                <p className="text-gray-600">Invoice, Quotation & Receipt Management</p>
               </div>
             </div>
             <div className="flex space-x-2">
@@ -54,11 +54,11 @@ const Dashboard = () => {
             Document Management
           </h2>
           <p className="text-gray-600">
-            Create professional invoices and quotations for your clients
+            Create professional invoices, quotations, and receipts for your clients
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
                 onClick={() => navigate('/invoice')}>
             <CardHeader className="text-center">
@@ -91,6 +91,24 @@ const Dashboard = () => {
             <CardContent>
               <Button className="w-full bg-blue-600 hover:bg-blue-700">
                 Create New Quotation
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate('/receipt')}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Receipt className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-xl text-gray-900">Create Receipt</CardTitle>
+              <CardDescription>
+                Generate official payment receipts for clients
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                Create New Receipt
               </Button>
             </CardContent>
           </Card>

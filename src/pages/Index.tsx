@@ -144,7 +144,7 @@ const Index = () => {
             <div className="flex flex-col items-center p-4">
               <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 mb-3 sm:mb-4" />
               <h4 className="font-semibold text-gray-900 mb-2 text-lg">Address</h4>
-              <p className="text-gray-600 text-sm sm:text-base">30 Suncity<br />Orchard, De Dorms<br />6840</p>
+              <p className="text-gray-600 text-sm sm:text-base">30 Suncity<br />Orchard, De Doorns<br />6840</p>
             </div>
             <div className="flex flex-col items-center p-4">
               <Phone className="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 mb-3 sm:mb-4" />
