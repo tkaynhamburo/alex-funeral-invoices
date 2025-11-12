@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, Plus, Trash2, Eye, Calculator } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
+
+const STORAGE_KEY = 'invoiceFormData';
 
 interface InvoiceItem {
   description: string;
@@ -41,6 +43,49 @@ const InvoiceGenerator = () => {
     ],
     discount: 0
   });
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setInvoiceData(parsedData);
+        toast({
+          title: "Data Restored",
+          description: "Your previous invoice data has been loaded.",
+        });
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    }
+  }, []);
+
+  // Save data whenever form changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(invoiceData));
+  }, [invoiceData]);
+
+  const clearData = () => {
+    if (window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      setInvoiceData({
+        invoiceNumber: `INV${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+        date: new Date().toISOString().split('T')[0],
+        dueDate: 'On Receipt',
+        clientName: '',
+        items: [
+          { description: 'Transport', rate: 13500, qty: 1, amount: 13500 },
+          { description: 'Coffin', rate: 2500, qty: 1, amount: 2500 }
+        ],
+        discount: 0
+      });
+      toast({
+        title: "Data Cleared",
+        description: "All invoice data has been cleared.",
+      });
+    }
+  };
 
   const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
     const newItems = [...invoiceData.items];
@@ -387,7 +432,7 @@ const InvoiceGenerator = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-1" />
@@ -395,12 +440,16 @@ const InvoiceGenerator = () => {
               </Button>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900">Invoice</h1>
             </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setShowPreview(!showPreview)} size="sm" variant="outline">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button onClick={clearData} size="sm" variant="destructive" className="flex-1 sm:flex-initial">
+                <Trash2 className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Clear</span>
+              </Button>
+              <Button onClick={() => setShowPreview(!showPreview)} size="sm" variant="outline" className="flex-1 sm:flex-initial">
                 <Eye className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Show'} </span>Preview
               </Button>
-              <Button onClick={downloadPDF} size="sm" className="bg-green-600 hover:bg-green-700">
+              <Button onClick={downloadPDF} size="sm" className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-initial">
                 <Download className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Download </span>PDF
               </Button>
