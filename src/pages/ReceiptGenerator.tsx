@@ -29,7 +29,7 @@ const ReceiptGenerator = () => {
 
   const [formData, setFormData] = useState<ReceiptData>({
     receiptNumber: '',
-    receiptDate: new Date().toISOString().split('T')[0],
+    receiptDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
     customerName: '',
     customerAddress: '',
     customerPhone: '',
@@ -66,7 +66,7 @@ const ReceiptGenerator = () => {
       localStorage.removeItem(STORAGE_KEY);
       setFormData({
         receiptNumber: '',
-        receiptDate: new Date().toISOString().split('T')[0],
+        receiptDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
         customerName: '',
         customerAddress: '',
         customerPhone: '',
@@ -392,9 +392,10 @@ const ReceiptGenerator = () => {
                 <Label htmlFor="receiptDate">Receipt Date *</Label>
                 <Input
                   id="receiptDate"
-                  type="date"
+                  type="text"
                   value={formData.receiptDate}
                   onChange={(e) => handleInputChange('receiptDate', e.target.value)}
+                  placeholder="06 September 2025"
                 />
               </div>
             </div>
